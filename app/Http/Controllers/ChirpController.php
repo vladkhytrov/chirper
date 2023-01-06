@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chirp;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -63,11 +64,16 @@ class ChirpController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param Chirp $chirp
-     * @return Response
+     * @return View
+     * @throws AuthorizationException
      */
-    public function edit(Chirp $chirp)
+    public function edit(Chirp $chirp): View
     {
-        //
+        $this->authorize('update', $chirp);
+
+        return \view('chirps.edit', [
+            'chirp' => $chirp
+        ]);
     }
 
     /**
@@ -79,7 +85,15 @@ class ChirpController extends Controller
      */
     public function update(Request $request, Chirp $chirp)
     {
-        //
+        $this->authorize('update', $chirp);
+
+        $validated = $request->validate([
+            'message' => 'required|string|max:255',
+        ]);
+
+        $chirp->update($validated);
+
+        return redirect(route('chirps.index'));
     }
 
     /**
